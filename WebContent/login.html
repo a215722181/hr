@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="css/login.css" />
+	</head>
+
+	<body>
+		<!--登陆区主体开始-->
+		<div id="main">
+
+			<!--头像区开始-->
+			<div id="header-border">
+				<div id="header-pic">
+
+				</div>
+			</div>
+			<!--头像区结束-->
+			<!--帐号密码区开始-->
+			<div id="account">
+				<form action="">
+					<div class="input">
+						<input type="text" id="empLoginName" name="empLoginName" placeholder="please input username" />
+					</div>
+					<div class="input">
+						<input type="password" id="empPwd" name="empPwd" placeholder="please input password" />
+					</div>
+				</form>
+			</div>
+			<!--账号密码区结束-->
+			<!--登陆按钮开始-->
+			<button class="login-btn">Sign In</button>
+			<!--登陆按钮结束-->
+			<!--登陆区底部开始-->
+			<div id="footer">
+				<a href="">Forget Password?</a>
+			</div>
+			<!--登陆区底部结束-->
+		</div>
+		<!--登陆区主题结束-->
+
+		<script type="text/javascript" src="js/jquery.js"></script>
+		<script type="text/javascript" src="js/global.js"></script>
+		<script type="text/javascript" src="js/layer/layer.js"></script>
+
+		<script>
+			$(function() {
+				//判断用户名是否有缓存,有就直接显示
+				var empLoginName = localStorage.getItem('empLoginName');
+				
+				if (empLoginName) {
+					$('#empLoginName').val(empLoginName);
+				}
+				
+				//判断当前浏览器是否有头像缓存数据，如果有，则直接显示
+				var empPic = localStorage.getItem('empPic');
+				
+				if (empPic) {
+					$('#header-pic').css('background-image','url(' + empPic +')');	
+				}
+				
+				$('.login-btn').click(function() {
+
+					//请求参数
+					var param = {
+						empLoginName: $('#empLoginName').val(),
+						empPwd: $('#empPwd').val()
+					}
+
+					//调用后台登录接口
+					$.post(baseUrl + '/LoginServlet', param, function(data) {
+
+							if (data == 1) {
+								layer.msg('用户名不存在');
+							} else if (data == 2) {
+								layer.msg('密码错误');
+							} else if (data == 3) {
+								layer.msg('登陆成功');
+								
+								//存储当前用户名到web存储
+								localStorage.setItem('empLoginName',$('#empLoginName').val());
+
+								//查询当前用户头像数据
+								$.get(baseUrl + '/GetEmpPicServlet', function(data) {
+
+										if (data && data != 'null') {
+											//存储base64头像到web存储
+											localStorage.setItem('empPic', data);
+										} else {
+											//如果用户没有头像，删除原来的头像数据
+											localStorage.removeItem('empPic');
+										}
+
+										setTimeout(function() {
+											location.href = 'Main.html';
+										}, 1000)
+
+									})
+									.error(function() {
+										layer.msg('请求头像数据失败');
+									});
+							}
+
+						})
+						.error(function() {
+
+							layer.msg('请求失败');
+
+						});
+
+				});
+
+			});
+		</script>
+
+	</body>
+
+</html>
